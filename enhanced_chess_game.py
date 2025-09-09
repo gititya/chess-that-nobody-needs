@@ -35,26 +35,6 @@ def load_images():
             pygame.image.load(f"assetsv1/{filename}"), (SQUARE_SIZE, SQUARE_SIZE))
     return images
 
-# === Draw Board Labels (Ranks and Files) ===
-def draw_board_labels(screen, font):
-    # Files (a-h) - bottom of board
-    files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
-    for i, file_label in enumerate(files):
-        x_pos = i * SQUARE_SIZE + SQUARE_SIZE - 15
-        y_pos = BOARD_WIDTH - 15
-        color = pygame.Color(100, 100, 100)  # Gray color
-        text = font.render(file_label, True, color)
-        screen.blit(text, (x_pos, y_pos))
-    
-    # Ranks (1-8) - left side of board
-    ranks = ['1', '2', '3', '4', '5', '6', '7', '8']
-    for i, rank_label in enumerate(ranks):
-        x_pos = 5
-        y_pos = (7-i) * SQUARE_SIZE + 5  # Reversed because rank 8 is at top
-        color = pygame.Color(100, 100, 100)  # Gray color
-        text = font.render(rank_label, True, color)
-        screen.blit(text, (x_pos, y_pos))
-
 # === Draw Legal Moves ===
 def draw_legal_moves(screen, board, selected_square):
     if selected_square is None:
@@ -89,7 +69,7 @@ def draw_selected_square(screen, selected_square):
     # Yellow highlight for selected square
     pygame.draw.rect(screen, pygame.Color(255, 255, 0), 
                     pygame.Rect(col*SQUARE_SIZE, row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 4)
-    
+
 # === Draw Board ===
 def draw_board(screen):
     colors = [pygame.Color(240, 217, 181), pygame.Color(181, 136, 99)]
@@ -114,88 +94,8 @@ def get_square_from_pos(pos):
     row = 7 - (y // SQUARE_SIZE)
     return chess.square(col, row)
 
-# === Track and Draw Captured Pieces ===
-def get_captured_pieces(board):
-    """Returns lists of captured pieces for both sides"""
-    all_pieces = {'P': 8, 'R': 2, 'N': 2, 'B': 2, 'Q': 1, 'K': 1,
-                  'p': 8, 'r': 2, 'n': 2, 'b': 2, 'q': 1, 'k': 1}
-    
-    # Count pieces still on board
-    current_pieces = {}
-    for square in chess.SQUARES:
-        piece = board.piece_at(square)
-        if piece:
-            symbol = piece.symbol()
-            current_pieces[symbol] = current_pieces.get(symbol, 0) + 1
-    
-    # Calculate captured pieces
-    white_captured = []
-    black_captured = []
-    
-    for piece_type in ['p', 'r', 'n', 'b', 'q']:  # Don't show captured kings
-        # White pieces captured by black
-        missing_white = all_pieces[piece_type.upper()] - current_pieces.get(piece_type.upper(), 0)
-        white_captured.extend([piece_type.upper()] * missing_white)
-        
-        # Black pieces captured by white  
-        missing_black = all_pieces[piece_type] - current_pieces.get(piece_type, 0)
-        black_captured.extend([piece_type] * missing_black)
-    
-    return white_captured, black_captured
-
-def draw_captured_pieces(screen, font, images, board, y_start):
-    """Draw captured pieces in the menu panel"""
-    white_captured, black_captured = get_captured_pieces(board)
-    
-    # Title
-    title_text = font.render("Captured Pieces:", True, pygame.Color(0, 0, 0))
-    screen.blit(title_text, (BOARD_WIDTH + 10, y_start))
-    y_offset = y_start + 25
-    
-    # White pieces captured by black (you lost these)
-    if white_captured:
-        label_text = font.render("You lost:", True, pygame.Color(150, 0, 0))
-        screen.blit(label_text, (BOARD_WIDTH + 10, y_offset))
-        y_offset += 20
-        
-        x_offset = BOARD_WIDTH + 10
-        piece_size = 25
-        for i, piece in enumerate(white_captured):
-            if i > 0 and i % 6 == 0:  # New row every 6 pieces
-                y_offset += piece_size + 2
-                x_offset = BOARD_WIDTH + 10
-            
-            # Scale down the piece image
-            small_image = pygame.transform.scale(images[piece], (piece_size, piece_size))
-            screen.blit(small_image, (x_offset, y_offset))
-            x_offset += piece_size + 2
-        
-        y_offset += piece_size + 10
-    
-    # Black pieces captured by white (you captured these)
-    if black_captured:
-        label_text = font.render("You captured:", True, pygame.Color(0, 150, 0))
-        screen.blit(label_text, (BOARD_WIDTH + 10, y_offset))
-        y_offset += 20
-        
-        x_offset = BOARD_WIDTH + 10
-        piece_size = 25
-        for i, piece in enumerate(black_captured):
-            if i > 0 and i % 6 == 0:  # New row every 6 pieces
-                y_offset += piece_size + 2
-                x_offset = BOARD_WIDTH + 10
-            
-            # Scale down the piece image
-            small_image = pygame.transform.scale(images[piece], (piece_size, piece_size))
-            screen.blit(small_image, (x_offset, y_offset))
-            x_offset += piece_size + 2
-        
-        y_offset += piece_size + 10
-    
-    return y_offset  # Return new y position for next elements
-
 # === Draw Menu Panel ===
-def draw_menu_panel(screen, font, images, board, selected_elo, game_over, game_result):
+def draw_menu_panel(screen, font, selected_elo, game_over, game_result):
     # Fill menu area with gray background
     menu_rect = pygame.Rect(BOARD_WIDTH, 0, MENU_WIDTH, BOARD_WIDTH)
     pygame.draw.rect(screen, pygame.Color(200, 200, 200), menu_rect)
@@ -213,11 +113,7 @@ def draw_menu_panel(screen, font, images, board, selected_elo, game_over, game_r
         screen.blit(elo_text, (BOARD_WIDTH + 10, y_offset))
         y_offset += 25
     
-    y_offset += 20
-    
-    # Captured Pieces Section
-    y_offset = draw_captured_pieces(screen, font, images, board, y_offset)
-    y_offset += 20
+    y_offset += 30
     
     # New Game Button
     new_game_rect = pygame.Rect(BOARD_WIDTH + 10, y_offset, 180, 30)
@@ -276,9 +172,9 @@ def handle_menu_click(pos, selected_elo):
             return elo, False
         y_offset += 25
     
-    # Check New Game button - adjusted for new layout
-    new_game_y = y_offset + 150  # Approximate position after captured pieces
-    if new_game_y <= y <= new_game_y + 50:  # Wider range to account for dynamic layout
+    # Check New Game button
+    new_game_y = y_offset + 30
+    if new_game_y <= y <= new_game_y + 30:
         return selected_elo, True
     
     return selected_elo, False
@@ -314,55 +210,7 @@ def configure_engine_elo(engine, target_elo):
         # If configuration fails, continue with default settings
         pass
 
-# === Main Function ===> VIEW ONLY BOARD
-# def main():
-#     pygame.init()
-#     screen = pygame.display.set_mode((BOARD_WIDTH, BOARD_WIDTH))
-#     pygame.display.set_caption("Chess vs Stockfish")
-#     clock = pygame.time.Clock()
-
-#     board = chess.Board()
-#     images = load_images()
-
-#     engine = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
-
-#     selected_square = None
-#     running = True
-
-#     while running:
-#         clock.tick(FPS)
-#         for event in pygame.event.get():
-#             if event.type == pygame.QUIT:
-#                 running = False
-#                 break
-
-#             elif event.type == pygame.MOUSEBUTTONDOWN:
-#                 if selected_square is None:
-#                     selected_square = get_square_from_pos(pygame.mouse.get_pos())
-#                 else:
-#                     target_square = get_square_from_pos(pygame.mouse.get_pos())
-#                     move = chess.Move(selected_square, target_square)
-#                     if move in board.legal_moves:
-#                         board.push(move)
-
-#                         if not board.is_game_over():
-#                             result = engine.play(board, chess.engine.Limit(time=0.5))
-#                             board.push(result.move)
-
-#                     selected_square = None
-
-#         draw_board(screen)
-#         draw_pieces(screen, board, images)
-#         pygame.display.flip()
-
-#     engine.quit()
-#     pygame.quit()
-
-# if __name__ == "__main__":
-#     main()
-
-# === Main Function ===> PLAYABILITY
-
+# === Main Function ===> PLAYABILITY WITH FEATURES
 def main():
     pygame.init()
     screen = pygame.display.set_mode((TOTAL_WIDTH, BOARD_WIDTH))
@@ -458,8 +306,7 @@ def main():
         draw_pieces(screen, board, images)
         
         # Draw menu panel
-        draw_menu_panel(screen, font, images, board, selected_elo, game_over, game_result)
-
+        draw_menu_panel(screen, font, selected_elo, game_over, game_result)
         
         pygame.display.flip()
 
@@ -469,26 +316,9 @@ def main():
 if __name__ == "__main__":
     main()
 
-    #### ==== CHANGES NEEDED ==####
-# 1. UPDATE THE STOCKFISH BINARY FROM M1 TO THE BREW VERSION - https://stockfishchess.org/download/
-# 2. UPDATE CHESS PIECES - MAYBE V2/V3 AND ADD ANALYSIS 
-# 3. ADD A FUNCTION TO CHECK IF THE GAME IS OVER AND DISPLAY THE RESULT. ALSO, REDUCE THE SPEED. 
-#adding everything as a comment - retain 
-
-
-
-### ==== STAGE 1 AND 2 === ###
-#1. BASIC PLAYABILITY WITH ADJUSTMENTS TO ELO, NEW GAME BUTTON, AND CAPTURED PIECES
-#2. INDICATIONS ON WHEN GAME IS OVER AND RESULT
-
-## -- WHAT IS NEEDED? -- ##
-#1. BETTER CHESS PIECES - MAYBE V2/V3
-# 2. ANALYSIS FEATURE - MAYBE LATER
-# 3. ABILITY TO SAVE AND LOAD GAMES
-# 4. OPTION TO PLAY AS BLACK
-# 5. LABELS ON BOARD (RANKS AND FILES)
-# 6. BETTER UI/UX 
-# 7. UPDATE THE STOCKFISH BINARY FROM M1 TO THE BREW VERSION - https://stockfishchess.org/download/
-# 8. ADD SOUNDS
-# 9. WHY IS THE ENGINE SO FAST? CAN WE SLOW IT DOWN A BIT?
-# 10. GAME ANALYSIS FEATURE - MAYBE LATER
+#### ==== FEATURES ADDED ====
+# 1. Visual legal move indicators (green circles for moves, red circles for captures)
+# 2. ELO rating selector with 6 difficulty levels (800-2800)
+# 3. New Game button to restart anytime
+# 4. Game over analysis and result display
+# 5. Enhanced UI with side panel for controls
