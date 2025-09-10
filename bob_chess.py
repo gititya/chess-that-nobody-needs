@@ -6,6 +6,7 @@ import os
 # === Settings ===
 BOARD_WIDTH = 512
 SQUARE_SIZE = BOARD_WIDTH // 8
+MARGIN = 20  # Space around the board for labels
 FPS = 60
 MENU_WIDTH = 200
 TOTAL_WIDTH = BOARD_WIDTH + MENU_WIDTH
@@ -37,23 +38,33 @@ def load_images():
 
 # === Draw Board Labels (Ranks and Files) ===
 def draw_board_labels(screen, font):
-    # Files (a-h) - bottom of board
     files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    ranks = ['8', '7', '6', '5', '4', '3', '2', '1']
+    label_color = pygame.Color(80, 80, 80)
+
+    # Files: top and bottom
     for i, file_label in enumerate(files):
-        x_pos = i * SQUARE_SIZE + SQUARE_SIZE - 15
-        y_pos = BOARD_WIDTH - 15
-        color = pygame.Color(100, 100, 100)  # Gray color
-        text = font.render(file_label, True, color)
-        screen.blit(text, (x_pos, y_pos))
-    
-    # Ranks (1-8) - left side of board
-    ranks = ['1', '2', '3', '4', '5', '6', '7', '8']
+        x_center = MARGIN + i * SQUARE_SIZE + SQUARE_SIZE // 2
+
+        # Top
+        text_top = font.render(file_label, True, label_color)
+        screen.blit(text_top, text_top.get_rect(center=(x_center, MARGIN // 2)))
+
+        # Bottom
+        text_bottom = font.render(file_label, True, label_color)
+        screen.blit(text_bottom, text_bottom.get_rect(center=(x_center, MARGIN + 8 * SQUARE_SIZE + MARGIN // 2)))
+
+    # Ranks: left and right
     for i, rank_label in enumerate(ranks):
-        x_pos = 5
-        y_pos = (7-i) * SQUARE_SIZE + 5  # Reversed because rank 8 is at top
-        color = pygame.Color(100, 100, 100)  # Gray color
-        text = font.render(rank_label, True, color)
-        screen.blit(text, (x_pos, y_pos))
+        y_center = MARGIN + i * SQUARE_SIZE + SQUARE_SIZE // 2
+
+        # Left
+        text_left = font.render(rank_label, True, label_color)
+        screen.blit(text_left, text_left.get_rect(center=(MARGIN // 2, y_center)))
+
+        # Right
+        text_right = font.render(rank_label, True, label_color)
+        screen.blit(text_right, text_right.get_rect(center=(MARGIN + 8 * SQUARE_SIZE + MARGIN // 2, y_center)))
 
 # === Draw Legal Moves ===
 def draw_legal_moves(screen, board, selected_square):
@@ -362,7 +373,6 @@ def configure_engine_elo(engine, target_elo):
 #     main()
 
 # === Main Function ===> PLAYABILITY
-
 def main():
     pygame.init()
     screen = pygame.display.set_mode((TOTAL_WIDTH, BOARD_WIDTH))
@@ -453,6 +463,8 @@ def main():
 
         # Draw everything
         draw_board(screen)
+        draw_board_labels(screen, font)
+        draw_board_labels(screen, font)
         draw_selected_square(screen, selected_square)
         draw_legal_moves(screen, board, selected_square)
         draw_pieces(screen, board, images)
@@ -469,20 +481,12 @@ def main():
 if __name__ == "__main__":
     main()
 
-    #### ==== CHANGES NEEDED ==####
-# 1. UPDATE THE STOCKFISH BINARY FROM M1 TO THE BREW VERSION - https://stockfishchess.org/download/
-# 2. UPDATE CHESS PIECES - MAYBE V2/V3 AND ADD ANALYSIS 
-# 3. ADD A FUNCTION TO CHECK IF THE GAME IS OVER AND DISPLAY THE RESULT. ALSO, REDUCE THE SPEED. 
-#adding everything as a comment - retain 
-
-
-
 ### ==== STAGE 1 AND 2 === ###
 #1. BASIC PLAYABILITY WITH ADJUSTMENTS TO ELO, NEW GAME BUTTON, AND CAPTURED PIECES
 #2. INDICATIONS ON WHEN GAME IS OVER AND RESULT
 
 ## -- WHAT IS NEEDED? -- ##
-#1. BETTER CHESS PIECES - MAYBE V2/V3
+#1. BETTER CHESS PIECES - MAYBE V2/V3 - https://official-stockfish.github.io/docs/stockfish-wiki/Download-and-usage.html#install-in-a-chess-gui 
 # 2. ANALYSIS FEATURE - MAYBE LATER
 # 3. ABILITY TO SAVE AND LOAD GAMES
 # 4. OPTION TO PLAY AS BLACK
