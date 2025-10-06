@@ -1,0 +1,21 @@
+# Mac system files
+.DS_Store
+**/.DS_Store
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+bobby_fischer_chess/
+venv/
+env/
+
+# IDE files
+.vscode/
+.idea/
+
+# Personal notes
+stage3.txt
+CLAUDE.md
