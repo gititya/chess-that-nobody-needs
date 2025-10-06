@@ -1,3 +1,6 @@
+#DO NOT USE THIS. ITS JUST A DOWNLOADED FILE FOR REFERENCE. USE BOB_CHESS.PY#
+
+
 import pygame
 import chess
 import chess.engine
