@@ -49,9 +49,9 @@ PLAYER_COLORS = {
 
 # === Piece Set Options ===
 PIECE_SETS = {
-    "Classic (v1)": "assetsv1",
-    "Modern (v2)": "assetsv2",
-    "Elegant (v3)": "assetsv3"
+    "Classic": "assets-classic",
+    "Anarchy": "assets-anarchy",
+    "Modern Hoofare": "assets-Modern Hoofare"
 }
 
 # === Load Sound Effects ===
@@ -69,7 +69,7 @@ def load_sounds():
         return {}
 
 # === Load Images ===
-def load_images(asset_folder="assetsv1"):
+def load_images(asset_folder="assets-classic"):
     mapping = {
         'K': 'wK.png', 'Q': 'wQ.png', 'R': 'wR.png', 'B': 'wB.png', 'N': 'wN.png', 'P': 'wP.png',
         'k': 'bK.png', 'q': 'bQ.png', 'r': 'bR.png', 'b': 'bB.png', 'n': 'bN.png', 'p': 'bP.png'
@@ -80,9 +80,9 @@ def load_images(asset_folder="assetsv1"):
             images[piece] = pygame.transform.scale(
                 pygame.image.load(f"{asset_folder}/{filename}"), (SQUARE_SIZE, SQUARE_SIZE))
         except pygame.error:
-            # Fallback to assetsv1 if piece not found in selected set
+            # Fallback to assets-classic if piece not found in selected set
             images[piece] = pygame.transform.scale(
-                pygame.image.load(f"assetsv1/{filename}"), (SQUARE_SIZE, SQUARE_SIZE))
+                pygame.image.load(f"assets-classic/{filename}"), (SQUARE_SIZE, SQUARE_SIZE))
     return images
 
 # === Update Window Dimensions ===
@@ -242,10 +242,10 @@ def get_captured_pieces(board):
     
     return white_captured, black_captured
 
-def draw_captured_pieces(screen, font, images, board, y_start, menu_start_x):
+def draw_captured_pieces(screen, font, font_small, images, board, y_start, menu_start_x):
     """Draw captured pieces in the menu panel"""
     white_captured, black_captured = get_captured_pieces(board)
-    
+
     # Title
     title_text = font.render("Captured Pieces:", True, pygame.Color(0, 0, 0))
     screen.blit(title_text, (menu_start_x + 10, y_start))
@@ -253,7 +253,7 @@ def draw_captured_pieces(screen, font, images, board, y_start, menu_start_x):
     
     # White pieces captured by black (you lost these)
     if white_captured:
-        label_text = font.render("You lost:", True, pygame.Color(150, 0, 0))
+        label_text = font_small.render("You lost:", True, pygame.Color(150, 0, 0))
         screen.blit(label_text, (menu_start_x + 10, y_offset))
         y_offset += 20
 
@@ -273,7 +273,7 @@ def draw_captured_pieces(screen, font, images, board, y_start, menu_start_x):
     
     # Black pieces captured by white (you captured these)
     if black_captured:
-        label_text = font.render("You captured:", True, pygame.Color(0, 150, 0))
+        label_text = font_small.render("You captured:", True, pygame.Color(0, 150, 0))
         screen.blit(label_text, (menu_start_x + 10, y_offset))
         y_offset += 20
 
@@ -294,7 +294,7 @@ def draw_captured_pieces(screen, font, images, board, y_start, menu_start_x):
     return y_offset  # Return new y position for next elements
 
 # === Draw Move History ===
-def draw_move_history(screen, font, board, y_start, menu_start_x):
+def draw_move_history(screen, font, font_small, board, y_start, menu_start_x):
     """Draw the last 10 moves in the menu panel"""
     title_text = font.render("Move History:", True, pygame.Color(0, 0, 0))
     screen.blit(title_text, (menu_start_x + 10, y_start))
@@ -310,14 +310,14 @@ def draw_move_history(screen, font, board, y_start, menu_start_x):
         else:  # Black move
             move_text = f"   {move}"
 
-        text_surface = font.render(move_text, True, pygame.Color(0, 0, 0))
+        text_surface = font_small.render(move_text, True, pygame.Color(0, 0, 0))
         screen.blit(text_surface, (menu_start_x + 10, y_offset))
         y_offset += 20
 
     return y_offset + 10
 
 # === Draw Menu Panel ===
-def draw_menu_panel(screen, font, images, board, selected_elo, selected_thinking_time, player_color, board_flipped, selected_piece_set, game_over, game_result, game_started):
+def draw_menu_panel(screen, font, font_small, images, board, selected_elo, selected_thinking_time, player_color, board_flipped, selected_piece_set, game_over, game_result, game_started):
     # Fill menu area with gray background
     menu_start_x = MARGIN + BOARD_WIDTH + MARGIN
     menu_rect = pygame.Rect(menu_start_x, 0, MENU_WIDTH, TOTAL_HEIGHT)
@@ -329,13 +329,13 @@ def draw_menu_panel(screen, font, images, board, selected_elo, selected_thinking
 
     # Player Color Selection (only if game not started)
     if not game_started:
-        title_text = font.render("Player Color:", True, pygame.Color(0, 0, 0))
+        title_text = font.render("Play as:", True, pygame.Color(0, 0, 0))
         screen.blit(title_text, (menu_start_x + 10, y_offset))
         y_offset += 25
 
         for label, color in PLAYER_COLORS.items():
             text_color = pygame.Color(0, 100, 0) if color == player_color else pygame.Color(50, 50, 50)
-            color_text = font.render(label, True, text_color)
+            color_text = font_small.render(label, True, text_color)
             screen.blit(color_text, (menu_start_x + 10, y_offset))
             y_offset += 20
 
@@ -348,44 +348,43 @@ def draw_menu_panel(screen, font, images, board, selected_elo, selected_thinking
         y_offset += 30
 
     # ELO Selection
-    title_text = font.render("Engine Strength:", True, pygame.Color(0, 0, 0))
+    title_text = font.render("Difficulty (ELO):", True, pygame.Color(0, 0, 0))
     screen.blit(title_text, (menu_start_x + 10, y_offset))
     y_offset += 25
 
     for i, (label, elo) in enumerate(ELO_LEVELS.items()):
         color = pygame.Color(0, 100, 0) if elo == selected_elo else pygame.Color(50, 50, 50)
-        elo_text = font.render(label, True, color)
+        elo_text = font_small.render(label, True, color)
         screen.blit(elo_text, (menu_start_x + 10, y_offset))
-        y_offset += item_spacing * 2 + 12
+        y_offset += 20
 
     y_offset += section_spacing
 
     # Thinking Time Selection
-    title_text = font.render("AI Speed:", True, pygame.Color(0, 0, 0))
+    title_text = font.render("Game Speed:", True, pygame.Color(0, 0, 0))
     screen.blit(title_text, (menu_start_x + 10, y_offset))
     y_offset += 25
 
     for label, time_val in THINKING_TIMES.items():
         color = pygame.Color(0, 100, 0) if time_val == selected_thinking_time else pygame.Color(50, 50, 50)
-        time_text = font.render(label, True, color)
+        time_text = font_small.render(label, True, color)
         screen.blit(time_text, (menu_start_x + 10, y_offset))
-        y_offset += item_spacing * 2 + 12
+        y_offset += 20
 
     y_offset += section_spacing
 
-    # Piece Set Selection (only if game not started)
-    if not game_started:
-        title_text = font.render("Piece Set:", True, pygame.Color(0, 0, 0))
-        screen.blit(title_text, (menu_start_x + 10, y_offset))
-        y_offset += 25
+    # Piece Set Selection
+    title_text = font.render("Chess Piece:", True, pygame.Color(0, 0, 0))
+    screen.blit(title_text, (menu_start_x + 10, y_offset))
+    y_offset += 25
 
-        for label, folder in PIECE_SETS.items():
-            color = pygame.Color(0, 100, 0) if folder == selected_piece_set else pygame.Color(50, 50, 50)
-            piece_text = font.render(label, True, color)
-            screen.blit(piece_text, (menu_start_x + 10, y_offset))
-            y_offset += 20
+    for label, folder in PIECE_SETS.items():
+        color = pygame.Color(0, 100, 0) if folder == selected_piece_set else pygame.Color(50, 50, 50)
+        piece_text = font_small.render(label, True, color)
+        screen.blit(piece_text, (menu_start_x + 10, y_offset))
+        y_offset += 20
 
-        y_offset += section_spacing
+    y_offset += section_spacing
 
     # Board Flip Button
     flip_text = "Flip Board" + (" ✓" if board_flipped else "")
@@ -418,7 +417,7 @@ def draw_menu_panel(screen, font, images, board, selected_elo, selected_thinking
     y_offset += 45
 
     # Captured Pieces Section
-    y_offset = draw_captured_pieces(screen, font, images, board, y_offset, menu_start_x)
+    y_offset = draw_captured_pieces(screen, font, font_small, images, board, y_offset, menu_start_x)
     y_offset += section_spacing
     
     # Game Status
@@ -432,9 +431,11 @@ def draw_menu_panel(screen, font, images, board, selected_elo, selected_thinking
     else:
         status_text = font.render("Game Active", True, pygame.Color(0, 150, 0))
         screen.blit(status_text, (menu_start_x + 10, y_offset))
-    
+
+    y_offset += 30  # Add spacing after game status
+
     # Move History
-    y_offset = draw_move_history(screen, font, board, y_offset, menu_start_x)
+    y_offset = draw_move_history(screen, font, font_small, board, y_offset, menu_start_x)
 
     return new_game_rect, flip_rect, resign_rect
 
@@ -506,14 +507,13 @@ def handle_menu_click(pos, selected_elo, selected_thinking_time, player_color, b
         y_offset += item_spacing * 2 + 12
     y_offset += section_spacing
 
-    # Check Piece Set selection clicks (only if game not started)
-    if not game_started:
-        y_offset += 25
-        for label, folder in PIECE_SETS.items():
-            if y_offset <= y <= y_offset + 20:
-                return selected_elo, selected_thinking_time, player_color, board_flipped, folder, False, False, False
-            y_offset += 20
-        y_offset += section_spacing
+    # Check Piece Set selection clicks
+    y_offset += 25
+    for label, folder in PIECE_SETS.items():
+        if y_offset <= y <= y_offset + 20:
+            return selected_elo, selected_thinking_time, player_color, board_flipped, folder, False, False, False
+        y_offset += 20
+    y_offset += section_spacing
 
     # Check Flip Board button
     if y_offset <= y <= y_offset + 30:
@@ -625,11 +625,12 @@ def main():
     update_dimensions(initial_width, initial_height)
 
     clock = pygame.time.Clock()
-    font = pygame.font.Font(None, 24)
+    font = pygame.font.Font(None, 24)  # Heading font
+    font_small = pygame.font.Font(None, 20)  # Menu item font
 
     # Initialize game state
     board = chess.Board()
-    selected_piece_set = "assetsv1"  # Default piece set
+    selected_piece_set = "assets-classic"  # Default piece set
     images = load_images(selected_piece_set)
     sounds = load_sounds()
     engine = chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH)
@@ -710,9 +711,11 @@ def main():
                     # Auto-flip board when switching colors
                     board_flipped = (player_color == chess.BLACK)
 
-                if new_piece_set != selected_piece_set and not game_started:
+                if new_piece_set != selected_piece_set:
                     selected_piece_set = new_piece_set
+                    print(f"Loading piece set: {selected_piece_set}")
                     images = load_images(selected_piece_set)
+                    print(f"Images reloaded successfully")
 
                 if flip_clicked:
                     board_flipped = new_board_flipped
@@ -789,7 +792,7 @@ def main():
         draw_pieces(screen, board, images, board_flipped)
 
         # Draw menu panel
-        new_game_rect, flip_rect, resign_rect = draw_menu_panel(screen, font, images, board, selected_elo,
+        new_game_rect, flip_rect, resign_rect = draw_menu_panel(screen, font, font_small, images, board, selected_elo,
                                                                selected_thinking_time, player_color, board_flipped,
                                                                selected_piece_set, game_over, game_result, game_started)
 
@@ -818,16 +821,15 @@ if __name__ == "__main__":
 # 10. GAME ANALYSIS FEATURE - MAYBE LATER
 # 11. CONSOLIDATE STAGE 2(THERE ARE TWO!!) --> done
 
-### ==== STAGE 3 === ###
-# 1. LABELS ON BOARD (RANKS AND FILES)
-# 2. OPTION TO PLAY AS BLACK 
-# 3. WHY IS THE ENGINE SO FAST? CAN WE SLOW IT DOWN A BIT?
+### ==== MVP (Minimum Viable Product) === ###
+# 1. Playability with 3 different chess piece sets --> done
+# 2. Game controls with varied ELO, game speed, and playing as black/white --> done
+# 3. Move history & captured pieces tracking --> done
+# 4. Controls to flip board during gameplay and start new game --> done
 
-
-## -- For Stage 4 -- ##
+## -- Future Enhancements -- ##
 # 1. ADD SOUNDS
-# 2. BETTER UI/UX
-# 3. ABILITY TO SAVE AND LOAD GAMES
-# # 4. GAME ANALYSIS FEATURE
-# 5. BETTER CHESS PIECES - MAYBE V2/V3 - https://official-stockfish.github.io/docs/stockfish-wiki/Download-and-usage.html#install-in-a-chess-gui
-# 6. READ FROM THE BOOK 
+# 2. ABILITY TO SAVE AND LOAD GAMES
+# 3. GAME ANALYSIS FEATURE
+# 4. Training integration with Bobby Fischer materials
+# 5. Web app (FastAPI + WebSocket + LLM personality)
