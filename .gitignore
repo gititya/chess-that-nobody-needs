@@ -16,6 +16,12 @@ env/
 .vscode/
 .idea/
 
+# Temporary files
+*.svg
+*.log
+*_temp*.py
+*convert*.py
+
 # Personal notes
 stage3.txt
 CLAUDE.md
